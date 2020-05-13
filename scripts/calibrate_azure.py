@@ -37,7 +37,7 @@ if calibrate_camera == True:
     img_list = []
     calib_fnms = sorted(glob.glob(calib_imgs_path + '/*.jpg'))
     for idx, fn in enumerate(calib_fnms):
-        print('Using ...', idx, fn)
+        print('Using ...', fn)
         img = cv2.imread(fn)
         img_list.append( img )
         h, w, c = img.shape

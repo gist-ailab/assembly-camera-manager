@@ -1,0 +1,33 @@
+
+<launch>
+  <!-- Start the aruco_detect launch file -->
+  <include file="$(find aruco_detect)/launch/aruco_detect.launch" ns="azure1" >
+    <arg name="camera" value="/azure1/rgb" />
+    <arg name="image" value="/image_raw" />
+    <arg name="dictionary" value="12" />
+    <arg name="fiducial_len" value="0.106" />
+  </include>
+
+  <!-- Start camera broadcaster-->
+  <node name="camera_broadcaster" pkg="assembly_camera_calibrator" type="camera_broadcaster.py" respawn="false" output="screen" >
+      <param name="camera" type="string" value="azure1" />
+  </node>
+
+<!-- Start the fiducial_slam launch file -->
+  <include file="$(find fiducial_slam)/launch/fiducial_slam.launch" ns="azure1" >
+    <arg name="camera" default="/azure1/rgb"/>
+    <arg name="map_frame" default="map"/>
+    <arg name="odom_frame" default="odom"/>
+    <arg name="base_frame" default="rgb_camera_link"/>
+    <arg name="publish_tf" default="true"/>
+    <arg name="tf_publish_interval" default="0.2"/>
+    <arg name="future_date_transforms" default="0.0"/>
+    <arg name="publish_6dof_pose" default="true"/>
+    <arg name="fiducial_len" default="0.106"/>
+    <arg name="systematic_error" default="0.01"/>
+    <arg name="do_pose_estimation" default="false"/>
+    <arg name="covariance_diagonal" default="[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"/> -->
+  </include>
+
+    
+</launch>
