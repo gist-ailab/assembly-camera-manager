@@ -1,15 +1,17 @@
-# assembly_camera_calibrator
-camera calibration tool for furniture assembly project (Kinect Azure and Zivid) using ArUCO marker
-
-## Dependencies
-
-- Azure Kinect python wrapper: https://github.com/brendandburns/py-k4a
-- fiducials: sudo apt-get install ros-melodic-fiducials
+# assembly_camera_manager
+camera manager for furniture assembly project (Kinect Azure and Zivid) using ArUCO marker
 
 ## Features
 
 - Intrinsic & Extrinsic Calibration for Kinect Azure using ArUCO
 - tf manager for map and cameras
+
+## Dependencies
+
+- Azure Kinect driver & ROS Wrapper
+- Intrinsic Calibration: Azure Kinect python wrapper: https://github.com/brendandburns/py-k4a
+- fiducials: sudo apt-get install ros-melodic-fiducials
+
 
 ## Usage
 
@@ -27,7 +29,7 @@ python src/calibrate_azure.py
 
 ### Extrinsic Calibration for single camera
 
-1. Generate markers ((In our case, cv2.aruco.DICT_7X7_50 was used)
+1. Generate markers (In our case, cv2.aruco.DICT_7X7_50 was used)
 ```
 python scripts/generate_markers.py 
 ```
@@ -50,7 +52,7 @@ roslaunch assembly_camera_manager double_azure.launch
 
 ## TODO
 
-- Multiply map -> camera_base to rgb_camera_link-> depth_camera_link-> azure1_camera_base 
+- visualize detected fid
 - Fix single_azure.launch
 - Support for Zivid
 
