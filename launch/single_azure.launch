@@ -1,33 +1,38 @@
 
 <launch>
-  <!-- Start the aruco_detect launch file -->
-  <include file="$(find aruco_detect)/launch/aruco_detect.launch" ns="azure1" >
-    <arg name="camera" value="/azure1/rgb" />
-    <arg name="image" value="/image_raw" />
-    <arg name="dictionary" value="12" />
-    <arg name="fiducial_len" value="0.106" />
-  </include>
 
-  <!-- Start camera broadcaster-->
-  <node name="camera_broadcaster" pkg="assembly_camera_calibrator" type="camera_broadcaster.py" respawn="false" output="screen" >
-      <param name="camera" type="string" value="azure1" />
+  <arg name="camera1" value="azure1"/>
+
+  <!-- arguments for camera input -->
+  <arg name="dictionary" value="12"/>
+  <arg name="fiducial_len" value="0.106" />
+  <arg name="image" default="image_raw"/>
+  <arg name="transport" default="compressed"/>
+  <arg name="do_pose_estimation" default="true"/>
+  <arg name="ignore_fiducials" default="" />
+  <arg name="fiducial_len_override" default="" />
+
+  <!-- Start the aruco_node for camera 1-->
+  <node pkg="aruco_detect" name="aruco_detect" ns="$(arg camera1)"
+    type="aruco_detect" output="screen" respawn="false">
+    <param name="image_transport" value="$(arg transport)"/>
+    <param name="publish_images" value="true" />
+    <param name="fiducial_len" value="$(arg fiducial_len)"/>
+    <param name="dictionary" value="$(arg dictionary)"/>
+    <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
+    <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
+    <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
+    <remap from="tf_prefix" to="$(arg camera1)"/>
+    <remap from="/camera/compressed" to="/$(arg camera1)/rgb/$(arg image)/$(arg transport)"/>
+    <remap from="/camera_info" to="/$(arg camera1)/rgb/camera_info"/>
+    <remap from="/fiducial_images" to="/$(arg camera1)/fiducial_images"/>
+    <remap from="/fiducial_transforms" to="/$(arg camera1)/fiducial_transforms"/>
+    <remap from="/fiducial_vertices" to="/$(arg camera1)/fiducial_vertices"/>
   </node>
 
-<!-- Start the fiducial_slam launch file -->
-  <include file="$(find fiducial_slam)/launch/fiducial_slam.launch" ns="azure1" >
-    <arg name="camera" default="/azure1/rgb"/>
-    <arg name="map_frame" default="map"/>
-    <arg name="odom_frame" default="odom"/>
-    <arg name="base_frame" default="rgb_camera_link"/>
-    <arg name="publish_tf" default="true"/>
-    <arg name="tf_publish_interval" default="0.2"/>
-    <arg name="future_date_transforms" default="0.0"/>
-    <arg name="publish_6dof_pose" default="true"/>
-    <arg name="fiducial_len" default="0.106"/>
-    <arg name="systematic_error" default="0.01"/>
-    <arg name="do_pose_estimation" default="false"/>
-    <arg name="covariance_diagonal" default="[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"/> -->
-  </include>
-
+  <!-- Start camera broadcaster-->
+  <node name="$(arg camera1)_broadcaster" pkg="assembly_camera_manager" type="camera_broadcaster.py" respawn="false" output="screen" >
+      <param name="camera" type="string" value="$(arg camera1)" />
+  </node>
     
 </launch>

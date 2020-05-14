@@ -49,11 +49,11 @@ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=
 roslaunch assembly_camera_manager double_azure.launch
 ```
 
+![demo](imgs/ec_example.png)
 
 ## TODO
 
-- visualize detected fid
-- Fix single_azure.launch
+- Elaborate intrinsic calibration for accurate point cloud merge and extrinsic calibration (Currently, we are using factory calibrated values)
 - Support for Zivid
 
 ## References

@@ -12,7 +12,7 @@
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
   
-  <!-- arguments for slam -->
+  <!-- ar guments for slam -->
   <arg name="publish_tf" default="true"/>
   <arg name="tf_publish_interval" default="0.2"/>
   <arg name="future_date_transforms" default="0.0"/>
@@ -20,7 +20,7 @@
   <arg name="systematic_error" default="0.01"/>
   <arg name="covariance_diagonal" default="[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"/> -->
 
-  <!-- Start the aruco_node for azure1-->
+  <!-- Start the aruco_node for camera 1-->
 
   <node pkg="aruco_detect" name="aruco_detect" ns="$(arg camera1)"
     type="aruco_detect" output="screen" respawn="false">
@@ -39,7 +39,7 @@
     <remap from="/fiducial_vertices" to="/$(arg camera1)/fiducial_vertices"/>
   </node>
 
-  <!-- Start the aruco node for azure2 -->
+  <!-- Start the aruco node for camera 2 -->
   <node pkg="aruco_detect" name="aruco_detect" ns="$(arg camera2)"
     type="aruco_detect" output="screen" respawn="false">
     <param name="image_transport" value="$(arg transport)"/>
@@ -57,14 +57,24 @@
     <remap from="/fiducial_vertices" to="/$(arg camera2)/fiducial_vertices"/>
   </node>
 
-  <!-- Start camera broadcaster for azure 1-->
-  <node name="$(arg camera1)_broadcaster" pkg="assembly_camera_manager" type="camera_broadcaster.py" respawn="false" output="screen" ns="$(arg camera1)">
+  <!-- Start camera broadcaster for camera 1-->
+  <node name="$(arg camera1)_broadcaster" pkg="assembly_camera_manager" type="camera_broadcaster.py" respawn="false" output="screen" >
       <param name="camera" type="string" value="$(arg camera1)" />
   </node>
-  <!-- Start camera broadcaster for azure 2-->
-  <node name="$(arg camera2)_broadcaster" pkg="assembly_camera_manager" type="camera_broadcaster.py" respawn="false" output="screen" ns="$(arg camera2)">
+
+  <!-- Start camera broadcaster for camera 2-->
+  <node name="$(arg camera2)_broadcaster" pkg="assembly_camera_manager" type="camera_broadcaster.py" respawn="false" output="screen" >
       <param name="camera" type="string" value="$(arg camera2)" />
   </node>
 
+  <!-- merge two separate tf tree of camera 1 and 2  -->
+  <node name="merge_map" pkg="assembly_camera_manager" type="merge_map.py" respawn="false" output="screen" >
+      <param name="camera1" type="string" value="$(arg camera1)" />
+      <param name="camera2" type="string" value="$(arg camera2)" />
+  </node>
+
+  <!-- define camera2_map as a map  -->
+  <node pkg="tf" type="static_transform_publisher" 
+        name="map_broadcaster" args="0 0 0 0 0 0 $(arg camera2)_map map 100" />
 
 </launch>
