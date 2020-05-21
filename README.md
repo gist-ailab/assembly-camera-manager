@@ -1,19 +1,39 @@
-# assembly_camera_manager
-camera manager for furniture assembly project (Kinect Azure and Zivid) using ArUCO marker
+# Assembly Camera Manager
 
-## Features
+Camera manager for furniture assembly project (Kinect Azure and Zivid) using ArUCO marker
+
+### Features
 
 - Intrinsic & Extrinsic Calibration for Kinect Azure using ArUCO
 - tf manager for map and cameras
+- receive the sensor value of Zivid and Kinect Azure 
 
-## Dependencies
+## To Do
+
+- Elaborate intrinsic calibration for accurate point cloud merge and extrinsic calibration (Currently, we are using factory calibrated values)
+- Support for Zivid
+
+## Getting Started
+
+### Prerequisites
 
 - Azure Kinect driver & ROS Wrapper
 - Intrinsic Calibration: Azure Kinect python wrapper: https://github.com/brendandburns/py-k4a
 - fiducials: sudo apt-get install ros-melodic-fiducials
 
+### Kinect Azure
+```
+$ roscore 
+$ roslaunch azure_kinect_ros_driver driver.launch color_resolution:=1536P depth_mode:=WFOV_UNBINNED
+$ python src/deep-furniture-recognition/src/receive_azure.py 
+```
 
-## Usage
+### Zivid
+```
+$ roscore 
+$ ROS_NAMESPACE=zivid_camera rosrun zivid_camera zivid_camera_node
+$ python src/deep-furniture-recognition/src/receive_zivid.py 
+```
 
 ### Intrinsic Calibration
 
@@ -49,18 +69,27 @@ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=
 roslaunch assembly_camera_manager double_azure.launch
 ```
 
-![demo](imgs/ec_example.png)
+![demo](imgs/example_extrinsic_calib_2d.png)
+![demo](imgs/example_extrinsic_calib_3d.png)
 
-## TODO
+## Authors
 
-- Elaborate intrinsic calibration for accurate point cloud merge and extrinsic calibration (Currently, we are using factory calibrated values)
-- Support for Zivid
+* **Seunghyeok Back** [seungback](https://github.com/SeungBack)
+
+## License
+
+This project is licensed under the MIT License
+
+## Acknowledgments
+
+This work was supported by Institute for Information & Communications Technology Promotion(IITP) grant funded by Korea goverment(MSIT) (No.2019-0-01335, Development of AI technology to generate and validate the task plan for assembling furniture in the real and virtual environment by understanding the unstructured multi-modal information from the assembly manual.
 
 ## References
 
 - [Aruco_Tracker](https://github.com/njanirudh/Aruco_Tracker)
 - Aruco calibration: https://github.com/abhishek098/camera_calibration
 - https://www.learnopencv.com/augmented-reality-using-aruco-markers-in-opencv-c-python/
+
 
 
 

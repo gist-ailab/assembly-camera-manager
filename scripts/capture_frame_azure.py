@@ -2,6 +2,7 @@ import k4a
 import faulthandler
 import sys
 
+
 faulthandler.enable()
 
 dev = k4a.Device()
@@ -18,31 +19,34 @@ if k4a.device_open(0, dev):
     config.synchronized_images_only = True
 
     if k4a.device_start_cameras(dev, config):
-        capture = k4a.Capture()
-        res = k4a.device_get_capture(dev, capture, 1000)
-        if res == k4a.K4A_WAIT_RESULT_SUCCEEDED:
-            img = k4a.capture_get_color_image(capture)
-            if img:
-                w = k4a.image_get_width_pixels(img)
-                h = k4a.image_get_height_pixels(img)
-                s = k4a.image_get_stride_bytes(img)
-                print('Capture: {} x {} @ {}'.format(h, w, s / w))
+        count = 0
+        while True:
+            count += 1
+            capture = k4a.Capture()
+            res = k4a.device_get_capture(dev, capture, 1000)
+            if res == k4a.K4A_WAIT_RESULT_SUCCEEDED:
+                img = k4a.capture_get_color_image(capture)
+                if img:
+                    w = k4a.image_get_width_pixels(img)
+                    h = k4a.image_get_height_pixels(img)
+                    s = k4a.image_get_stride_bytes(img)
+                    print('Capture: {} x {} @ {}'.format(h, w, s / w))
 
-                try:
-                    with open('{}.jpg'.format(sys.argv[1]), 'wb') as fp:
-                        fp.write(k4a.image_get_buffer(img))
-                        fp.flush()
-                        fp.close()
+                    try:
+                        with open('tmp_img/{}_{}.jpg'.format(sys.argv[1], count), 'wb') as fp:
+                            fp.write(k4a.image_get_buffer(img))
+                            fp.flush()
+                            fp.close()
 
-                        k4a.image_release(img) #I think this is working
-                        k4a.capture_release(capture) #I don't think this is working
-                except:
-                    import sys
-                    print("Unexpected error:", sys.exc_info()[0])
+                            k4a.image_release(img) #I think this is working
+                            k4a.capture_release(capture) #I don't think this is working
+                    except:
+                        import sys
+                        print("Unexpected error:", sys.exc_info()[0])
+                else:
+                    print('get image failed!')
             else:
-                print('get image failed!')
-        else:
-            print('Capture failed!')
+                print('Capture failed!')
     else:
         print("Failed to start cameras!")
 
