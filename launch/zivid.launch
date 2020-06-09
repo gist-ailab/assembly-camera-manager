@@ -1,0 +1,41 @@
+
+<launch>
+  <arg name="camera" value="zivid_camera"/>
+
+  <!-- arguments for camera input -->
+  <arg name="dictionary" value="12"/>
+  <arg name="fiducial_len" value="0.106" />
+  <arg name="image" default="image_color"/>
+  <arg name="transport" default="compressed"/>
+  <arg name="do_pose_estimation" default="true"/>
+  <arg name="ignore_fiducials" default="" />
+  <arg name="fiducial_len_override" default="" />
+  
+  <!-- Start the aruco_node for zivid-->
+  <node pkg="aruco_detect" name="aruco_detect" ns="$(arg camera)"
+    type="aruco_detect" output="screen" respawn="false">
+    <param name="image_transport" value="$(arg transport)"/>
+    <param name="publish_images" value="true" />
+    <param name="fiducial_len" value="$(arg fiducial_len)"/>
+    <param name="dictionary" value="$(arg dictionary)"/>
+    <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
+    <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
+    <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
+    <remap from="tf_prefix" to="$(arg camera)"/>
+    <remap from="/camera/compressed" to="/$(arg camera)/color/$(arg image)/$(arg transport)"/>
+    <remap from="/camera_info" to="/$(arg camera)/color/camera_info"/>
+    <remap from="/fiducial_images" to="/$(arg camera)/fiducial_images"/>
+    <remap from="/fiducial_transforms" to="/$(arg camera)/fiducial_transforms"/>
+    <remap from="/fiducial_vertices" to="/$(arg camera)/fiducial_vertices"/>
+  </node>
+
+  <!-- Start camera broadcaster for zivid-->
+  <node name="$(arg camera)_broadcaster" pkg="assembly_camera_manager" type="zivid_broadcaster.py" respawn="false" output="screen" >
+      <param name="camera" type="string" value="$(arg camera)" />
+  </node>
+
+  <!-- define camera2_map as a map  -->
+  <node pkg="tf" type="static_transform_publisher" 
+        name="zivid_map_broadcaster" args="0 0 0 0 0 0 zivid_camera_fid_25 map 100" />
+
+</launch>

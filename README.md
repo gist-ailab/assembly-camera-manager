@@ -11,7 +11,7 @@ Camera manager for furniture assembly project (Kinect Azure and Zivid) using ArU
 ## To Do
 
 - Elaborate intrinsic calibration for accurate point cloud merge and extrinsic calibration (Currently, we are using factory calibrated values)
-- Support for Zivid
+- merge azure maps and zivid map
 
 ## Getting Started
 
@@ -32,7 +32,7 @@ $ python src/deep-furniture-recognition/src/receive_azure.py
 ```
 $ roscore 
 $ ROS_NAMESPACE=zivid_camera rosrun zivid_camera zivid_camera_node
-$ python src/deep-furniture-recognition/src/receive_zivid.py 
+$ roslaunch assembly_camera_manager zivid.launch
 ```
 
 ### Intrinsic Calibration

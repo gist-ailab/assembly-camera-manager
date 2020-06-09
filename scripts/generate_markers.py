@@ -3,7 +3,7 @@
 import cv2
 import numpy as np
  
-NUM_MARKERS = 8
+NUM_MARKERS = 50
 N_PIXELS = 300
 
 
