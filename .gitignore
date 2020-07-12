@@ -1,4 +1,6 @@
-/image
+image/
+imgs/
 .vscode
 camera_info
-marker*
+*.pyc
+

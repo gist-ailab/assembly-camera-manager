@@ -4,14 +4,13 @@ Camera manager for furniture assembly project (Kinect Azure and Zivid) using ArU
 
 ### Features
 
-- Intrinsic & Extrinsic Calibration for Kinect Azure using ArUCO
+- Receive the sensor value of Zivid and Kinect Azure 
+- Intrinsic & Extrinsic Calibration for Kinect Azure
+- Extrinsic Calibration for Zivid (ExtrinsicCalibrateZivid.srv)
 - tf manager for map and cameras
-- receive the sensor value of Zivid and Kinect Azure 
 
 ## To Do
-
-- Elaborate intrinsic calibration for accurate point cloud merge and extrinsic calibration (Currently, we are using factory calibrated values)
-- merge azure maps and zivid map
+- service for extrinsic calibration of Kinect Azure
 
 ## Getting Started
 
@@ -30,14 +29,13 @@ $ python src/deep-furniture-recognition/src/receive_azure.py
 
 ### Zivid
 ```
-$ roscore 
-$ ROS_NAMESPACE=zivid_camera rosrun zivid_camera zivid_camera_node
-$ roslaunch assembly_camera_manager zivid.launch
+$ roslaunch assembly_camera_manager zivid_manager.launch
+$ rosservice call /zivid_camera/extrinsic_calibration
 ```
 
 ### Intrinsic Calibration
 
-1. Print aruco marker board (imgs/aruco_marker_board.pdf)
+1. Print aruco marker board (samples/aruco_marker_board.pdf)
 2. Capture 50 images of marker board 
 ```
 python src/capture_frame_azure.py {file_name}
@@ -69,8 +67,8 @@ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=
 roslaunch assembly_camera_manager double_azure.launch
 ```
 
-![demo](imgs/example_extrinsic_calib_2d.png)
-![demo](imgs/example_extrinsic_calib_3d.png)
+![samples](samples/example_extrinsic_calib_2d.png)
+![samples](samples/example_extrinsic_calib_3d.png)
 
 ## Authors
 
@@ -87,9 +85,9 @@ This work was supported by Institute for Information & Communications Technology
 ## References
 
 - [Aruco_Tracker](https://github.com/njanirudh/Aruco_Tracker)
-- Aruco calibration: https://github.com/abhishek098/camera_calibration
-- https://www.learnopencv.com/augmented-reality-using-aruco-markers-in-opencv-c-python/
-
+- [Aruco calibration](https://github.com/abhishek098/camera_calibration)
+- [Opencv example](https://www.learnopencv.com/augmented-reality-using-aruco-markers-in-opencv-c-python/)
+- [Open3d example](https://github.com/intel-isl/Open3D)
 
 
 

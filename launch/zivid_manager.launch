@@ -1,7 +1,5 @@
 
 <launch>
-  <arg name="camera" value="zivid_camera"/>
-
   <!-- arguments for camera input -->
   <arg name="dictionary" value="12"/>
   <arg name="fiducial_len" value="0.106" />
@@ -11,8 +9,16 @@
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
   
+  <!-- Start Zivid driver-->
+  <node name="zivid_camera" pkg="zivid_camera" type="zivid_camera_node" ns="zivid_camera" output="screen"/>
+
+  <!-- Start extrininsic calibrator server-->
+  <node name="zivid_manager" pkg="assembly_camera_manager" 
+        type="zivid_manager.py" respawn="false" output="screen" >
+  </node>
+
   <!-- Start the aruco_node for zivid-->
-  <node pkg="aruco_detect" name="aruco_detect" ns="$(arg camera)"
+  <node pkg="aruco_detect" name="aruco_detect" ns="zivid_camera"
     type="aruco_detect" output="screen" respawn="false">
     <param name="image_transport" value="$(arg transport)"/>
     <param name="publish_images" value="true" />
@@ -21,21 +27,16 @@
     <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
     <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
     <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
-    <remap from="tf_prefix" to="$(arg camera)"/>
-    <remap from="/camera/compressed" to="/$(arg camera)/color/$(arg image)/$(arg transport)"/>
-    <remap from="/camera_info" to="/$(arg camera)/color/camera_info"/>
-    <remap from="/fiducial_images" to="/$(arg camera)/fiducial_images"/>
-    <remap from="/fiducial_transforms" to="/$(arg camera)/fiducial_transforms"/>
-    <remap from="/fiducial_vertices" to="/$(arg camera)/fiducial_vertices"/>
-  </node>
-
-  <!-- Start camera broadcaster for zivid-->
-  <node name="$(arg camera)_broadcaster" pkg="assembly_camera_manager" type="zivid_broadcaster.py" respawn="false" output="screen" >
-      <param name="camera" type="string" value="$(arg camera)" />
+    <remap from="tf_prefix" to="zivid_camera"/>
+    <remap from="/camera/compressed" to="/zivid_camera/color/$(arg image)/$(arg transport)"/>
+    <remap from="/camera_info" to="/zivid_camera/color/camera_info"/>
+    <remap from="/fiducial_images" to="/zivid_camera/fiducial_images"/>
+    <remap from="/fiducial_transforms" to="/zivid_camera/fiducial_transforms"/>
+    <remap from="/fiducial_vertices" to="/zivid_camera/fiducial_vertices"/>
   </node>
 
   <!-- define camera2_map as a map  -->
   <node pkg="tf" type="static_transform_publisher" 
-        name="zivid_map_broadcaster" args="0 0 0 0 0 0 zivid_camera_fid_25 map 100" />
+        name="zivid_map_broadcaster" args="0 0 0 0 0 0 zivid_camera_fid_25 map 100" /> 
 
 </launch>

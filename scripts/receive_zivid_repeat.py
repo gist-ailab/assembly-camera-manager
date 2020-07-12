@@ -18,7 +18,6 @@ class Receiver:
         rospy.wait_for_service(ca_suggest_settings_service, 30.0)
 
         self.bridge = cv_bridge.CvBridge()
-        cv2.namedWindow("window", 1)
 
         self.capture_assistant_service = rospy.ServiceProxy(
             ca_suggest_settings_service, CaptureAssistantSuggestSettings
