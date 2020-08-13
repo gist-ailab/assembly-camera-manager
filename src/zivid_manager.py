@@ -7,7 +7,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import PointCloud2, Image
 import numpy as np
 from fiducial_msgs.msg import FiducialTransformArray
-from assembly_camera_manager.srv import ExtrinsicCalibrateZivid
+from assembly_camera_manager.srv import ExtrinsicCalibrate
 import tf
 import tf2_ros
 import geometry_msgs
@@ -27,7 +27,7 @@ class ZividManager:
         )
         # ready to capture and launch a extrinsic calibration server
         self.capture_service = rospy.ServiceProxy("/zivid_camera/capture", Capture)        
-        self.extrinsic_calibration_service = rospy.Service('/zivid_camera/extrinsic_calibration', ExtrinsicCalibrateZivid, self.extrinsic_calibrate)
+        self.extrinsic_calibration_service = rospy.Service('/zivid_camera/extrinsic_calibration', ExtrinsicCalibrate, self.extrinsic_calibrate)
         
 
     def capture_assistant_suggest_settings(self):
@@ -79,7 +79,7 @@ class ZividManager:
                 static_tf.transform.rotation.z = rot.z
                 static_tf.transform.rotation.w = rot.w
                 br.sendTransform(static_tf)
-
+                print(msg.header.frame_id)
                 rospy.loginfo_once("published static tf: {} -> zivid_camera_fid_{}".format(\
                     msg.header.frame_id, Fidtransform.fiducial_id))
 

@@ -22,9 +22,14 @@ Camera manager for furniture assembly project (Kinect Azure and Zivid) using ArU
 
 ### Kinect Azure
 ```
-$ roscore 
-$ roslaunch azure_kinect_ros_driver driver.launch color_resolution:=1536P depth_mode:=WFOV_UNBINNED
-$ python src/deep-furniture-recognition/src/receive_azure.py 
+# single camera
+$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch color_resolution:=1536P depth_mode:=WFOV_UNBINNED fps:=5  tf_prefix:=azure1_
+$ roslaunch assembly_camera_manager single_azure_manager.launch 
+$ rosservice call /azure1/extrinsic_calibration
+
+# double camera
+$ ROS_NAMESPACE=azure2 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000853594412 wired_sync_mode:=2 subordinate_delay_off_master_usec:=160 fps:=5 color_resolution:=720P depth_mode:=WFOV_UNBINNED tf_prefix:=azure2_
+$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000696793812 wired_sync_mode:=1 fps:=5 color_resolution:=720P depth_mode:=WFOV_UNBINNED tf_prefix:=azure1_
 ```
 
 ### Zivid

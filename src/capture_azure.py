@@ -9,13 +9,13 @@ class Receiver:
 
     def __init__(self):
         
-        rospy.init_node('azure_receiver')
-        rospy.loginfo("Starting azure_receiver.py")
+        rospy.init_node('capture_azure')
+        rospy.loginfo("Starting capture_azure.py")
 
         self.bridge = cv_bridge.CvBridge()
 
         rgb_sub = message_filters.Subscriber('rgb/image_raw', Image)
-        depth_sub = message_filters.Subscriber('depth_to_rgb/image_raw', Image, buff_size=1536*2048*6)
+        depth_sub = message_filters.Subscriber('depth_to_rgb/image_raw', Image)
         self.ts = message_filters.ApproximateTimeSynchronizer([rgb_sub, depth_sub], queue_size=1, slop=0.1)
         rospy.loginfo("[INFO] Starting rgb-d subscriber with time synchronizer")
         # from rgb-depth images, inference the results and publish it

@@ -29,7 +29,7 @@ class Receiver:
         # self.depth_sub = rospy.Subscriber('depth_to_rgb/image_raw', Image, self.depth_callback)
 
     def capture_assistant_suggest_settings(self):
-        max_capture_time = rospy.Duration.from_sec(10) # 0.2 to 10s
+        max_capture_time = rospy.Duration.from_sec(1) # 0.2 to 10s
         rospy.loginfo(
             "Calling capture assistant service with max capture time = %.2f sec",
             max_capture_time.to_sec(),

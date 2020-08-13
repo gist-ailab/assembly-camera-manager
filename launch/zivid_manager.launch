@@ -1,8 +1,8 @@
 
 <launch>
   <!-- arguments for camera input -->
-  <arg name="dictionary" value="12"/>
-  <arg name="fiducial_len" value="0.106" />
+  <arg name="dictionary" value="8"/>
+  <arg name="fiducial_len" value="0.120" />
   <arg name="image" default="image_color"/>
   <arg name="transport" default="compressed"/>
   <arg name="do_pose_estimation" default="true"/>
@@ -37,6 +37,27 @@
 
   <!-- define camera2_map as a map  -->
   <node pkg="tf" type="static_transform_publisher" 
-        name="zivid_map_broadcaster" args="0 0 0 0 0 0 zivid_camera_fid_25 map 100" /> 
+        name="zivid_map_broadcaster" args="0 0 0 0 0 0 zivid_camera_fid_0 map 100" /> 
+
+  <!-- image undistort -->
+  <!-- <arg name="scale" default="1.0" />
+
+  <node name="color_undistort_node" pkg="image_undistort" type="image_undistort_node" output="screen" clear_params="true">
+    <param name="scale" value="$(arg scale)"/>
+    <param name="output_camera_info_source" value="match_input" />
+    <remap from="input/image" to="/zivid_camera/color/image_color"/>
+    <remap from="input/camera_info" to="/zivid_camera/color/camera_info"/>
+    <remap from="output/image" to="/zivid_camera/color_rect/image_color"/>
+    <remap from="output/camera_info" to="/zivid_camera/color_rect/camera_info"/>
+  </node>
+
+  <node name="depth_undistort_node" pkg="image_undistort" type="image_undistort_node" output="screen" clear_params="true">
+    <param name="scale" value="$(arg scale)"/>
+    <param name="output_camera_info_source" value="match_input" />
+    <remap from="input/image" to="/zivid_camera/depth/image_raw"/>
+    <remap from="input/camera_info" to="/zivid_camera/depth/camera_info"/>
+    <remap from="output/image" to="/zivid_camera/depth_rect/image_raw"/>
+    <remap from="output/camera_info" to="/zivid_camera/depth_rect/camera_info"/>
+  </node> -->
 
 </launch>
