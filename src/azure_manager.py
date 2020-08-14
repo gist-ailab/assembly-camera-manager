@@ -61,6 +61,7 @@ class AzureManager:
                 rospy.loginfo_once("published static tf: {} -> {}_camera_fid_{}".format(\
                     msg.header.frame_id, self.camera_name, Fidtransform.fiducial_id))
 
+        self.aruco_sub.unregister()
 if __name__ == '__main__':
 
     azure_manager = AzureManager()
