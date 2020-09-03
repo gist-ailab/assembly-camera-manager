@@ -1,0 +1,102 @@
+
+<launch>
+  <!-- arguments for camera input -->
+  <arg name="dictionary" value="8"/>
+  <arg name="fiducial_len" value="0.120" />
+  <arg name="image" default="image_raw"/>
+  <arg name="transport" default="compressed"/>
+  <arg name="do_pose_estimation" default="true"/>
+  <arg name="publish_images" default="true"/>
+  <arg name="publish_tf_transforms" default="true"/>
+  <arg name="publish_fiducial_tf" default="false"/>
+  <arg name="ignore_fiducials" default="" />
+  <arg name="fiducial_len_override" default="" />
+
+  <!-- Start camera broadcaster-->
+  <node name="azure1_manager" pkg="assembly_camera_manager" 
+        type="azure_manager.py" respawn="false" output="screen" >
+      <param name="camera_name" type="string" value="azure1" />
+  </node>
+  <node name="azure2_manager" pkg="assembly_camera_manager" 
+        type="azure_manager.py" respawn="false" output="screen" >
+      <param name="camera_name" type="string" value="azure2" />
+  </node>
+  <node name="azure3_manager" pkg="assembly_camera_manager" 
+        type="azure_manager.py" respawn="false" output="screen" >
+      <param name="camera_name" type="string" value="azure3" />
+  </node>
+
+
+  <!-- Start the aruco_node for azure network-->
+  <node pkg="aruco_detect" name="aruco_detect" ns="azure1"
+    type="aruco_detect" respawn="false">
+    <param name="image_transport" value="$(arg transport)"/>
+    <param name="publish_images" value="$(arg publish_images)" />
+    <param name="publish_tf_transforms" value="$(arg publish_tf_transforms)" />
+    <param name="publish_fiducial_tf" value="$(arg publish_fiducial_tf)" />
+    <param name="fiducial_len" value="$(arg fiducial_len)"/>
+    <param name="dictionary" value="$(arg dictionary)"/>
+    <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
+    <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
+    <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
+    <remap from="tf_prefix" to="azure1"/>
+    <remap from="camera/compressed" to="/azure1/rgb/$(arg image)/$(arg transport)"/>
+    <remap from="camera_info" to="/azure1/rgb/camera_info"/>
+    <remap from="fiducial_images" to="/azure1/fiducial_images"/>
+    <remap from="fiducial_transforms" to="/azure1/fiducial_transforms"/>
+    <remap from="fiducial_vertices" to="/azure1/fiducial_vertices"/>
+  </node>
+
+  <node pkg="aruco_detect" name="aruco_detect" ns="azure2"
+    type="aruco_detect" respawn="false">
+    <param name="image_transport" value="$(arg transport)"/>
+    <param name="publish_images" value="$(arg publish_images)" />
+    <param name="publish_tf_transforms" value="$(arg publish_tf_transforms)" />
+    <param name="publish_fiducial_tf" value="$(arg publish_fiducial_tf)" />
+    <param name="fiducial_len" value="$(arg fiducial_len)"/>
+    <param name="dictionary" value="$(arg dictionary)"/>
+    <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
+    <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
+    <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
+    <remap from="tf_prefix" to="azure2"/>
+    <remap from="camera/compressed" to="/azure2/rgb/$(arg image)/$(arg transport)"/>
+    <remap from="camera_info" to="/azure2/rgb/camera_info"/>
+    <remap from="fiducial_images" to="/azure2/fiducial_images"/>
+    <remap from="fiducial_transforms" to="/azure2/fiducial_transforms"/>
+    <remap from="fiducial_vertices" to="/azure2/fiducial_vertices"/>
+  </node>
+
+  <node pkg="aruco_detect" name="aruco_detect" ns="azure3"
+    type="aruco_detect" respawn="false">
+    <param name="image_transport" value="$(arg transport)"/>
+    <param name="publish_images" value="$(arg publish_images)" />
+    <param name="publish_tf_transforms" value="$(arg publish_tf_transforms)" />
+    <param name="publish_fiducial_tf" value="$(arg publish_fiducial_tf)" />
+    <param name="fiducial_len" value="$(arg fiducial_len)"/>
+    <param name="dictionary" value="$(arg dictionary)"/>
+    <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
+    <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
+    <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
+    <remap from="tf_prefix" to="azure3"/>
+    <remap from="camera/compressed" to="/azure3/rgb/$(arg image)/$(arg transport)"/>
+    <remap from="camera_info" to="/azure3/rgb/camera_info"/>
+    <remap from="fiducial_images" to="/azure3/fiducial_images"/>
+    <remap from="fiducial_transforms" to="/azure3/fiducial_transforms"/>
+    <remap from="fiducial_vertices" to="/azure3/fiducial_vertices"/>
+  </node>
+
+
+  <!-- define transformation to the map  -->
+  <node pkg="tf" type="static_transform_publisher" 
+        name="azure1_map_broadcaster" args="0 0 0 0 0 0 azure1_camera_fid_0 map 100 " /> 
+
+  <!-- merge two separate tf tree between cameras  -->
+  <node name="azure2_map_merge" pkg="assembly_camera_manager" type="map_merge.py" respawn="false" output="screen" >
+      <param name="camera_name" type="string" value="azure2" />
+  </node>
+  <node name="azure3_map_merge" pkg="assembly_camera_manager" type="map_merge.py" respawn="false" output="screen" >
+      <param name="camera_name" type="string" value="azure3" />
+  </node>
+
+
+</launch>

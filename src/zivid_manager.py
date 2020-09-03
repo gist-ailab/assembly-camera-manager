@@ -9,6 +9,7 @@ import numpy as np
 from fiducial_msgs.msg import FiducialTransformArray
 from assembly_camera_manager.srv import ExtrinsicCalibrate
 import tf
+from tf import transformations as t
 import tf2_ros
 import geometry_msgs
 
@@ -28,10 +29,9 @@ class ZividManager:
         # ready to capture and launch a extrinsic calibration server
         self.capture_service = rospy.ServiceProxy("/zivid_camera/capture", Capture)        
         self.extrinsic_calibration_service = rospy.Service('/zivid_camera/extrinsic_calibration', ExtrinsicCalibrate, self.extrinsic_calibrate)
-        
 
     def capture_assistant_suggest_settings(self):
-        max_capture_time = rospy.Duration.from_sec(10) # 0.2 to 10s
+        max_capture_time = rospy.Duration.from_sec(1.0) # 0.2 to 10s
         rospy.loginfo(
             "Calling capture assistant service with max capture time = %.2f sec",
             max_capture_time.to_sec(),
@@ -42,17 +42,20 @@ class ZividManager:
         )
 
     def capture(self):
-        rospy.loginfo("Calling capture service")
+        rospy.loginfo_once("Calling capture service")
         self.capture_service()
     
     def extrinsic_calibrate(self, msg):
 
+        self.is_sucess = False
+        self.is_finish = False
         rospy.loginfo("Calling extrinsic_calibrate service")
-        target_fid_id = msg.fiducial_id
-        self.capture()
-        self.aruco_sub = rospy.Subscriber('/zivid_camera/fiducial_transforms', \
-                            FiducialTransformArray, self.fiducial_to_map, target_fid_id)
-
+        target_fiducial_id = msg.target_fiducial_id
+        self.zivid_sub = rospy.Subscriber('/zivid_camera/fiducial_transforms', \
+                            FiducialTransformArray, self.fiducial_to_map, target_fiducial_id)
+        while not self.is_finish:
+            pass
+        return self.is_sucess 
 
     def fiducial_to_map(self, msg, target_fiducial_id):
 
@@ -62,32 +65,42 @@ class ZividManager:
             # publish target fiducials as tf
             if Fidtransform.fiducial_id == target_fiducial_id:
 
-                trans = Fidtransform.transform.translation
-                rot = Fidtransform.transform.rotation
-
                 static_tf = geometry_msgs.msg.TransformStamped()
                 static_tf.header.stamp = rospy.Time.now()
-                static_tf.header.frame_id = str(msg.header.frame_id,)
-                static_tf.child_frame_id = "zivid_camera_fid_{}".format(Fidtransform.fiducial_id)
+                static_tf.child_frame_id = "{}".format(msg.header.frame_id)
+                static_tf.header.frame_id = "zivid_camera_fid_{}".format(Fidtransform.fiducial_id)
+                
+                trans = Fidtransform.transform.translation 
+                trans = (trans.x, trans.y, trans.z)               
+                rot = Fidtransform.transform.rotation
+                rot = (rot.x, rot.y, rot.z, rot.w)
+                transform = t.concatenate_matrices(t.translation_matrix(trans), t.quaternion_matrix(rot))
+                inversed_transform = t.inverse_matrix(transform)
+                # inverse transform
+                trans = t.translation_from_matrix(inversed_transform)
+                rot = t.quaternion_from_matrix(inversed_transform)
 
-                static_tf.transform.translation.x = trans.x
-                static_tf.transform.translation.y = trans.y
-                static_tf.transform.translation.z = trans.z
+                static_tf.transform.translation.x = trans[0]
+                static_tf.transform.translation.y = trans[1]
+                static_tf.transform.translation.z = trans[2]
+                static_tf.transform.rotation.x = rot[0]
+                static_tf.transform.rotation.y = rot[1]
+                static_tf.transform.rotation.z = rot[2]
+                static_tf.transform.rotation.w = rot[3]
 
-                static_tf.transform.rotation.x = rot.x
-                static_tf.transform.rotation.y = rot.y
-                static_tf.transform.rotation.z = rot.z
-                static_tf.transform.rotation.w = rot.w
+                # static_tf = transform.inversematrix(static_tf)
                 br.sendTransform(static_tf)
-                print(msg.header.frame_id)
                 rospy.loginfo_once("published static tf: {} -> zivid_camera_fid_{}".format(\
                     msg.header.frame_id, Fidtransform.fiducial_id))
+                self.is_sucess = True
 
-
+        self.zivid_sub.unregister()
+        self.is_finish = True
 
 if __name__ == "__main__":
     
     zivid_manager = ZividManager()
     zivid_manager.capture_assistant_suggest_settings()
-    rospy.spin()
+    while True:
+        zivid_manager.capture()
 

@@ -1,6 +1,8 @@
+#!/usr/bin/env python 
+
 import rospy
 import rosnode
-from zivid_camera.srv import *
+from zivid_camera.srv import Capture, CaptureAssistantSuggestSettings, CaptureAssistantSuggestSettingsRequest
 from std_msgs.msg import String
 from sensor_msgs.msg import PointCloud2, Image
 import cv2, cv_bridge
@@ -40,7 +42,7 @@ class Receiver:
         )
 
     def capture(self):
-        rospy.loginfo("Calling capture service")
+        rospy.loginfo_once("Calling capture service")
         self.capture_service()
 
 

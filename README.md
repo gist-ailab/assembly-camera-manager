@@ -19,18 +19,7 @@ Camera manager for furniture assembly project (Kinect Azure and Zivid) using ArU
 - Azure Kinect driver & ROS Wrapper
 - Intrinsic Calibration: Azure Kinect python wrapper: https://github.com/brendandburns/py-k4a
 - fiducials: sudo apt-get install ros-melodic-fiducials
-
-### Kinect Azure
-```
-# single camera
-$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch color_resolution:=1536P depth_mode:=WFOV_UNBINNED fps:=5  tf_prefix:=azure1_
-$ roslaunch assembly_camera_manager single_azure_manager.launch 
-$ rosservice call /azure1/extrinsic_calibration
-
-# double camera
-$ ROS_NAMESPACE=azure2 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000853594412 wired_sync_mode:=2 subordinate_delay_off_master_usec:=160 fps:=5 color_resolution:=720P depth_mode:=WFOV_UNBINNED tf_prefix:=azure2_
-$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000696793812 wired_sync_mode:=1 fps:=5 color_resolution:=720P depth_mode:=WFOV_UNBINNED tf_prefix:=azure1_
-```
+- aruco-ros
 
 ### Zivid
 ```
@@ -38,42 +27,27 @@ $ roslaunch assembly_camera_manager zivid_manager.launch
 $ rosservice call /zivid_camera/extrinsic_calibration
 ```
 
-### Intrinsic Calibration
+### Kinect Azure
+```
+# single camera
+$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch color_resolution:=1536P depth_mode:=WFOV_UNBINNED fps:=5  tf_prefix:=azure1_
+$ roslaunch assembly_camera_manager single_azure_manager.launch 
 
-1. Print aruco marker board (samples/aruco_marker_board.pdf)
-2. Capture 50 images of marker board 
-```
-python src/capture_frame_azure.py {file_name}
-```
-3. Calibrate the intrinsic parameter 
-```
-python src/calibrate_azure.py
-```
+# triple camera
+$ ROS_NAMESPACE=azure3 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000880594512 wired_sync_mode:=2 subordinate_delay_off_master_usec:=360 fps:=5 color_resolution:=1536P depth_mode:=WFOV_UNBINNED tf_prefix:=azure3_
+$ ROS_NAMESPACE=azure2 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000853594412 wired_sync_mode:=2 subordinate_delay_off_master_usec:=180 fps:=5 color_resolution:=1536P depth_mode:=WFOV_UNBINNED tf_prefix:=azure2_
+$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000696793812 wired_sync_mode:=1 color_resolution:=1536P depth_mode:=WFOV_UNBINNED fps:=5 tf_prefix:=azure1_
+$ roslaunch assembly_camera_manager triple_azure_manager.launch 
 
-### Extrinsic Calibration for single camera
+# Calibrate Multi K4a Network
+$ roslaunch assembly_camera_manager triple_azure_manager.launch
+$ rosservice call /azure1/extrinsic_calibration
+$ rosservice call /azure2/extrinsic_calibration
+$ rosservice call /azure3/extrinsic_calibration
 
-1. Generate markers (In our case, cv2.aruco.DICT_7X7_50 was used)
-```
-python scripts/generate_markers.py 
-```
-2. Print the markers and place it where you want.
-
-3. Launch Kinect Azure driver and auto_detect_slam
-```
-ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000696793812 fps:=5 color_resolution:=720P depth_mode:=WFOV_UNBINNED
-roslaunch assembly_camera_manage single_azure.launch
-```
-
-### Extrinsic Calibration for multiple camera
 
 ```
-ROS_NAMESPACE=azure2 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000853594412 wired_sync_mode:=2 subordinate_delay_off_master_usec:=160 fps:=5 color_resolution:=720P depth_mode:=WFOV_UNBINNED tf_prefix:=azure2_
-ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000696793812 wired_sync_mode:=1 fps:=5 color_resolution:=720P depth_mode:=WFOV_UNBINNED tf_prefix:=azure1_
-roslaunch assembly_camera_manager double_azure.launch
-```
 
-![samples](samples/example_extrinsic_calib_2d.png)
-![samples](samples/example_extrinsic_calib_3d.png)
 
 ## Authors
 

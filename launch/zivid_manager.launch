@@ -6,9 +6,30 @@
   <arg name="image" default="image_color"/>
   <arg name="transport" default="compressed"/>
   <arg name="do_pose_estimation" default="true"/>
+  <arg name="publish_images" default="true"/>
+  <arg name="publish_tf_transforms" default="true"/>
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
   
+  <!-- Start the aruco_node for zivid-->
+  <node pkg="aruco_detect" name="aruco_detect" ns="zivid_camera"
+    type="aruco_detect" output="screen" respawn="false">
+    <param name="image_transport" value="$(arg transport)"/>
+    <param name="publish_images" value="$(arg publish_images)" />
+    <param name="publish_tf_transforms" value="$(arg publish_tf_transforms)" />
+    <param name="fiducial_len" value="$(arg fiducial_len)"/>
+    <param name="dictionary" value="$(arg dictionary)"/>
+    <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
+    <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
+    <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
+    <remap from="tf_prefix" to="zivid_camera"/>
+    <remap from="camera/compressed" to="/zivid_camera/color/$(arg image)/$(arg transport)"/>
+    <remap from="camera_info" to="/zivid_camera/color/camera_info"/>
+    <remap from="fiducial_images" to="/zivid_camera/fiducial_images"/>
+    <remap from="fiducial_transforms" to="/zivid_camera/fiducial_transforms"/>
+    <remap from="fiducial_vertices" to="/zivid_camera/fiducial_vertices"/>
+  </node>
+
   <!-- Start Zivid driver-->
   <node name="zivid_camera" pkg="zivid_camera" type="zivid_camera_node" ns="zivid_camera" output="screen"/>
 
@@ -16,48 +37,10 @@
   <node name="zivid_manager" pkg="assembly_camera_manager" 
         type="zivid_manager.py" respawn="false" output="screen" >
   </node>
-
-  <!-- Start the aruco_node for zivid-->
-  <node pkg="aruco_detect" name="aruco_detect" ns="zivid_camera"
-    type="aruco_detect" output="screen" respawn="false">
-    <param name="image_transport" value="$(arg transport)"/>
-    <param name="publish_images" value="true" />
-    <param name="fiducial_len" value="$(arg fiducial_len)"/>
-    <param name="dictionary" value="$(arg dictionary)"/>
-    <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
-    <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
-    <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
-    <remap from="tf_prefix" to="zivid_camera"/>
-    <remap from="/camera/compressed" to="/zivid_camera/color/$(arg image)/$(arg transport)"/>
-    <remap from="/camera_info" to="/zivid_camera/color/camera_info"/>
-    <remap from="/fiducial_images" to="/zivid_camera/fiducial_images"/>
-    <remap from="/fiducial_transforms" to="/zivid_camera/fiducial_transforms"/>
-    <remap from="/fiducial_vertices" to="/zivid_camera/fiducial_vertices"/>
-  </node>
-
+  
   <!-- define camera2_map as a map  -->
   <node pkg="tf" type="static_transform_publisher" 
-        name="zivid_map_broadcaster" args="0 0 0 0 0 0 zivid_camera_fid_0 map 100" /> 
+        name="zivid_map_broadcaster" args="0 0 0 0 0 0 map zivid_camera_fid_0 100" /> 
 
-  <!-- image undistort -->
-  <!-- <arg name="scale" default="1.0" />
-
-  <node name="color_undistort_node" pkg="image_undistort" type="image_undistort_node" output="screen" clear_params="true">
-    <param name="scale" value="$(arg scale)"/>
-    <param name="output_camera_info_source" value="match_input" />
-    <remap from="input/image" to="/zivid_camera/color/image_color"/>
-    <remap from="input/camera_info" to="/zivid_camera/color/camera_info"/>
-    <remap from="output/image" to="/zivid_camera/color_rect/image_color"/>
-    <remap from="output/camera_info" to="/zivid_camera/color_rect/camera_info"/>
-  </node>
-
-  <node name="depth_undistort_node" pkg="image_undistort" type="image_undistort_node" output="screen" clear_params="true">
-    <param name="scale" value="$(arg scale)"/>
-    <param name="output_camera_info_source" value="match_input" />
-    <remap from="input/image" to="/zivid_camera/depth/image_raw"/>
-    <remap from="input/camera_info" to="/zivid_camera/depth/camera_info"/>
-    <remap from="output/image" to="/zivid_camera/depth_rect/image_raw"/>
-    <remap from="output/camera_info" to="/zivid_camera/depth_rect/camera_info"/>
-  </node> -->
 
 </launch>
