@@ -64,6 +64,7 @@ class AzureManager:
         self.aruco_sub.unregister()
         self.is_finish = True
 
+        self.aruco_sub.unregister()
 if __name__ == '__main__':
 
     azure_manager = AzureManager()
