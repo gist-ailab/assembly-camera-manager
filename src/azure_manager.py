@@ -18,27 +18,28 @@ class AzureManager:
 
         rospy.init_node("azure_manager", anonymous=True)
         self.camera_name = rospy.get_param('~camera_name')
-        self.extrinsic_calibration_service = rospy.Service('/{}/extrinsic_calibration'.format(self.camera_name), ExtrinsicCalibrate, self.extrinsic_calibrate)
+        calib_srv = rospy.Service('/{}/extrinsic_calibration'.format(self.camera_name), ExtrinsicCalibrate, self.calibrate_azure)
         rospy.loginfo("Starting azure_manager.py for {}".format(self.camera_name))
     
-    def extrinsic_calibrate(self, msg):
+    def calibrate_azure(self, msg):
 
         self.is_sucess = False
         self.is_finish = False
-        rospy.loginfo("Calling extrinsic_calibrate service")
-        target_fid_id = msg.target_fiducial_id
+        rospy.loginfo("Calibrating {}".format(self.camera_name))
+        target_fid_id = msg.target_fiducial_ids
         self.aruco_sub = rospy.Subscriber('/{}/fiducial_transforms'.format(self.camera_name), \
                             FiducialTransformArray, self.fiducial_to_map, target_fid_id)
         while not self.is_finish:
             pass
         return self.is_sucess 
 
-    def fiducial_to_map(self, msg, target_fiducial_id):
+    def fiducial_to_map(self, msg, target_fiducial_ids):
 
         br = tf2_ros.StaticTransformBroadcaster()
+        n_sucess = 0
         for i, Fidtransform in enumerate(msg.transforms): 
             # publish target fiducials as tf
-            if Fidtransform.fiducial_id == target_fiducial_id:
+            if Fidtransform.fiducial_id in target_fiducial_ids:
 
                 static_tf = geometry_msgs.msg.TransformStamped()
                 static_tf.header.stamp = rospy.Time.now()
@@ -56,15 +57,16 @@ class AzureManager:
                 static_tf.transform.rotation.z = rot.z
                 static_tf.transform.rotation.w = rot.w
                 br.sendTransform(static_tf)
+                rospy.sleep(0.5)
 
-                rospy.loginfo_once("published static tf: {} -> {}_camera_fid_{}".format(\
+                rospy.loginfo("published static tf: {} -> {}_camera_fid_{}".format(\
                     msg.header.frame_id, self.camera_name, Fidtransform.fiducial_id, ))
-                self.is_sucess = True
-
-        self.aruco_sub.unregister()
+                n_sucess += 1
+        if n_sucess == len(target_fiducial_ids): self.is_sucess = True
         self.is_finish = True
-
         self.aruco_sub.unregister()
+
+
 if __name__ == '__main__':
 
     azure_manager = AzureManager()
