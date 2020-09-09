@@ -11,8 +11,8 @@
   <arg name="publish_fiducial_tf" default="false"/>
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
-  <arg name="target_fiducial_ids" value="0,1,3"/>
-  <arg name="vox_size" default="0.01"/>
+  <arg name="target_fiducial_ids" value="0,7,11"/>
+  <arg name="vox_size" default="0.015"/>
 
   <arg name="img_width" default="1280"/>
   <arg name="img_height" default="720"/>
@@ -20,8 +20,8 @@
   <arg name="x_max" default="1"/>
   <arg name="y_min" default="-1"/>
   <arg name="y_max" default="1"/>
-  <arg name="z_min" default="-0.1"/>
-  <arg name="z_max" default="0.3"/>
+  <arg name="z_min" default="-0.3"/>
+  <arg name="z_max" default="0.6"/>
 
   <!-- Start camera broadcaster-->
   <node name="azure1_manager" pkg="assembly_camera_manager" 
@@ -94,8 +94,8 @@
 
 
   <!-- define transformation to the map  -->
-  <node pkg="tf" type="static_transform_publisher" 
-        name="azure1_map_broadcaster" args="0 0 0 0 0 0 azure1_camera_fid_0 map 100 " /> 
+  <node pkg="tf2_ros" type="static_transform_publisher" 
+        name="azure1_map_broadcaster" args="0 0 0 0 0 0 azure1_camera_fid_0 map" /> 
 
   <!-- merge two separate tf tree between cameras  -->
   <node name="azure2_map_merge" pkg="assembly_camera_manager" type="map_merge.py" respawn="false" output="screen" >

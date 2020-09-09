@@ -38,17 +38,22 @@ $ rosservice call /triple_azure/extrinsic_calibration "target_fiducial_ids: [0, 
 
 #### triple camera
 ```
-$ ROS_NAMESPACE=azure3 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000880594512 wired_sync_mode:=2 subordinate_delay_off_master_usec:=360 fps:=5 color_resolution:=720P depth_mode:=WFOV_UNBINNED tf_prefix:=azure3_ rgb_point_cloud:=true
+$ ROS_NAMESPACE=azure3 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000880594512 wired_sync_mode:=2 subordinate_delay_off_master_usec:=500 fps:=5 color_resolution:=720P depth_mode:=NFOV_2X2BINNED tf_prefix:=azure3_ rgb_point_cloud:=true
 
-$ ROS_NAMESPACE=azure2 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000853594412 wired_sync_mode:=2 subordinate_delay_off_master_usec:=180 fps:=5 color_resolution:=720P depth_mode:=WFOV_UNBINNED tf_prefix:=azure2_ rgb_point_cloud:=true
+$ ROS_NAMESPACE=azure2 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000853594412 wired_sync_mode:=2 subordinate_delay_off_master_usec:=250 fps:=5 color_resolution:=720P depth_mode:=NFOV_2X2BINNED tf_prefix:=azure2_ rgb_point_cloud:=true
 
-$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000696793812 wired_sync_mode:=1 color_resolution:=720P depth_mode:=WFOV_UNBINNED fps:=5 tf_prefix:=azure1_ rgb_point_cloud:=true
+$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000696793812 wired_sync_mode:=1 color_resolution:=720P depth_mode:=NFOV_2X2BINNED fps:=5 tf_prefix:=azure1_ rgb_point_cloud:=true
 
 # Calibrate Multi K4a Network
 $ roslaunch assembly_camera_manager triple_azure_manager.launch
-$ rosservice call /triple_azure/extrinsic_calibration "target_fiducial_ids: [0, 1, 2]"
+$ rosservice call /triple_azure/extrinsic_calibration "target_fiducial_ids: [0, 1, 23"
 
 ```
+
+### Notes
+
+- build package with catkin_make -DCMAKE_BUILD_TYPE=Release for better performance 
+- https://github.com/microsoft/Azure_Kinect_ROS_Driver/issues/70
 
 
 ## Authors

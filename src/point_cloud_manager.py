@@ -40,6 +40,7 @@ class PointCloudManager:
         self.ROI = {'x': [rospy.get_param('~x_min'), rospy.get_param('~x_max')], 
                     'y': [rospy.get_param('~y_min'), rospy.get_param('~y_max')],
                     'z': [rospy.get_param('~z_min'), rospy.get_param('~z_max')]} 
+                    
         self.img_width = rospy.get_param('~img_width') 
         self.img_height = rospy.get_param('~img_height') 
         self.vox_size = rospy.get_param('~vox_size') 
@@ -63,7 +64,7 @@ class PointCloudManager:
             is_sucess_2 = calibrate_2(self.fiducial_ids) 
             is_sucess_3 = calibrate_3(self.fiducial_ids) 
             all_sucess = is_sucess_1 or is_sucess_2 or is_sucess_3
-
+        rospy.sleep(1.0)
         # refine the calibration using ICP b/w markers
         rospy.loginfo("ICP b/w markers for calibration refinement ")
         points_sub_1 = message_filters.Subscriber('/azure1/points2', PointCloud2, buff_size=1280*720*3)
@@ -106,10 +107,13 @@ class PointCloudManager:
         mask_2 = self.fiducial_vertices_to_mask(fidvertices_2)
         mask_3 = self.fiducial_vertices_to_mask(fidvertices_3)
         # crop the point clouds corresponding to the markers and transform it to cloud 1
-        cloud_1 = convert_ros_to_o3d_with_mask(pcl_msg_1, mask_1)
-        cloud_2 = convert_ros_to_o3d_with_mask(pcl_msg_2, mask_2)
+        cloud_1 = convert_ros_to_o3d(pcl_msg_1)
+        cloud_1 = crop_o3d_cloud_with_mask(cloud_1, mask_1)
+        cloud_2 = convert_ros_to_o3d(pcl_msg_2)
+        cloud_2 = crop_o3d_cloud_with_mask(cloud_2, mask_2)
         cloud_2 = do_transform_o3d_cloud(cloud_2, transform_2_to_1)
-        cloud_3 = convert_ros_to_o3d_with_mask(pcl_msg_3, mask_3)
+        cloud_3 = convert_ros_to_o3d(pcl_msg_3)
+        cloud_3 = crop_o3d_cloud_with_mask(cloud_3, mask_3)
         cloud_3 = do_transform_o3d_cloud(cloud_3, transform_3_to_1)
         # merged the point clouds and transform it to the map for visualization
         cloud_markers = [cloud_1, cloud_2, cloud_3]
@@ -152,25 +156,25 @@ class PointCloudManager:
             return
         start_time = time.time()
 
-        cloud_1 = convert_ros_to_o3d(pcl_msg_1)
+        cloud_1 = convert_ros_to_o3d(pcl_msg_1, remove_nans=True)
         cloud_1 = cloud_1.voxel_down_sample(voxel_size=self.vox_size)
 
-        cloud_2 = convert_ros_to_o3d(pcl_msg_2)
+        cloud_2 = convert_ros_to_o3d(pcl_msg_2, remove_nans=True)
         cloud_2 = cloud_2.voxel_down_sample(voxel_size=self.vox_size)
         cloud_2 = do_transform_o3d_cloud(cloud_2, transform_2_to_1)
         cloud_2.transform(self.icp_results[self.source_fiducial_ids[0]].transformation)
 
-        cloud_3 = convert_ros_to_o3d(pcl_msg_3)
+        cloud_3 = convert_ros_to_o3d(pcl_msg_3, remove_nans=True)
         cloud_3 = cloud_3.voxel_down_sample(voxel_size=self.vox_size)
         cloud_3 = do_transform_o3d_cloud(cloud_3, transform_3_to_1)
         cloud_3.transform(self.icp_results[self.source_fiducial_ids[1]].transformation)
 
         cloud_merged = cloud_1 + cloud_2 + cloud_3
         cloud_merged = do_transform_o3d_cloud(cloud_merged, transform_1_to_map)
-        cloud_merged = o3d_pass_through_filter(cloud_merged, ROI=self.ROI)
+        cloud_merged = o3d_cloud_pass_through_filter(cloud_merged, ROI=self.ROI)
 
         pcl_msg_merged = convert_o3d_to_ros(cloud_merged, frame_id="map")
-        print("point cloud merging:", time.time()-start_time)
+        rospy.loginfo("mering pointclouds: {}".format(time.time()-start_time))
         self.merged_cloud_pub.publish(pcl_msg_merged)
 
     def fiducial_vertices_to_mask(self, fiducial_vertices):
@@ -187,7 +191,6 @@ class PointCloudManager:
                                     [target_fid.x2, target_fid.y2], 
                                     [target_fid.x3, target_fid.y3]], np.int32)
                     mask = cv2.fillPoly(mask, [pts], 255)
-                    cv2.imwrite('/home/demo/mask.png', mask)
                     rospy.sleep(0.5)
                     n_sucess += 1
             if n_sucess == len(self.fiducial_ids): is_sucess = True        
