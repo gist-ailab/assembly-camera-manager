@@ -5,6 +5,7 @@ import roslib
 from fiducial_msgs.msg import FiducialTransformArray
 from std_msgs.msg import String
 from assembly_camera_manager.srv import ExtrinsicCalibrate
+import tf.transformations as tf_trans
 
 import tf
 import tf2_ros
@@ -56,6 +57,11 @@ class AzureManager:
                 static_tf.transform.rotation.y = rot.y
                 static_tf.transform.rotation.z = rot.z
                 static_tf.transform.rotation.w = rot.w
+                
+                # get cam_to_map
+                H_cam_to_map = np.eye(4)
+                H_cam_to_map[:3, 3] = tf_trans.translation_matrix((trans.x, trans.y, trans.z))[:3, 3]
+                H_cam_to_map[:3, :3] = tf_trans.quaternion_matrix((rot.x, rot.y, rot.z, rot.w))[:3, :3]
 
                 rospy.loginfo("published static tf: {} -> {}_camera_fid_{}".format(\
                     msg.header.frame_id, self.camera_name, Fidtransform.fiducial_id, ))   

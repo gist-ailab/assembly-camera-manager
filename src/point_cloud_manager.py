@@ -172,7 +172,11 @@ class PointCloudManager:
         cloud_merged = cloud_1 + cloud_2 + cloud_3
         cloud_merged = do_transform_o3d_cloud(cloud_merged, transform_1_to_map)
         cloud_merged = o3d_cloud_pass_through_filter(cloud_merged, ROI=self.ROI)
-
+        # plane_model, inliers = cloud_merged.segment_plane(distance_threshold=0.01, ransac_n=3, num_iterations=30)
+        # np_cloud = np.asarray(cloud_merged.points)
+        # outliers = np.ones(len(np_cloud), np.bool)
+        # outliers[inliers] = 0
+        # cloud_merged.points = open3d.utility.Vector3dVector(np_cloud[outliers])
         pcl_msg_merged = convert_o3d_to_ros(cloud_merged, frame_id="map")
         rospy.loginfo("mering pointclouds: {}".format(time.time()-start_time))
         self.merged_cloud_pub.publish(pcl_msg_merged)

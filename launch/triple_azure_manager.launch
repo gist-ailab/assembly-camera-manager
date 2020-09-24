@@ -20,7 +20,7 @@
   <arg name="x_max" default="1"/>
   <arg name="y_min" default="-1"/>
   <arg name="y_max" default="1"/>
-  <arg name="z_min" default="-0.3"/>
+  <arg name="z_min" default="-0.03"/>
   <arg name="z_max" default="0.6"/>
 
   <!-- Start camera broadcaster-->

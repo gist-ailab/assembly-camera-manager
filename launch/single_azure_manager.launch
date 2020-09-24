@@ -11,6 +11,7 @@
   <arg name="publish_fiducial_tf" default="false"/>
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
+  <arg name="target_fiducial_id" default="1"/>
 
   <!-- Start camera broadcaster-->
   <node name="single_azure_manager" pkg="assembly_camera_manager" 
@@ -19,8 +20,7 @@
   </node>
 
   <!-- Start the aruco_node for azure-->
-  <node pkg="aruco_detect" name="aruco_detect" ns="azure1"
-    type="aruco_detect" output="screen" respawn="false">
+  <node pkg="aruco_detect" name="aruco_detect" ns="azure1" type="aruco_detect" respawn="false">
     <param name="image_transport" value="$(arg transport)"/>
     <param name="publish_images" value="$(arg publish_images)" />
     <param name="publish_tf_transforms" value="$(arg publish_tf_transforms)" />
@@ -40,6 +40,6 @@
     
   <!-- define camera2_map as a map  -->
   <node pkg="tf" type="static_transform_publisher" 
-        name="azure_map_broadcaster" args="0 0 0 0 0 0 azure1_camera_fid_0 map 100 " /> 
+        name="azure_map_broadcaster" args="0 0 0 0 0 0 azure1_camera_fid_$(arg target_fiducial_id) map 100 " /> 
 
 </launch>
