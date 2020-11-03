@@ -3,4 +3,4 @@ imgs/
 .vscode
 camera_info
 *.pyc
-
+results/

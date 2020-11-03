@@ -11,7 +11,7 @@
   <arg name="publish_fiducial_tf" default="false"/>
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
-  <arg name="target_fiducial_ids" value="0,7,11"/>
+  <arg name="target_fiducial_ids" default="0,3,13"/>
   <arg name="vox_size" default="0.015"/>
 
   <arg name="img_width" default="1280"/>
@@ -22,19 +22,24 @@
   <arg name="y_max" default="1"/>
   <arg name="z_min" default="-0.03"/>
   <arg name="z_max" default="0.6"/>
+  <arg name="publish_cloud" default="false"/>
+  <arg name="save_folder" default="/home/demo/catkin_ws/src/assembly_camera_manager/results"/>
 
   <!-- Start camera broadcaster-->
   <node name="azure1_manager" pkg="assembly_camera_manager" 
         type="azure_manager.py" respawn="false" output="screen" >
       <param name="camera_name" type="string" value="azure1" />
+      <param name="save_folder" value="$(arg save_folder)" />
   </node>
   <node name="azure2_manager" pkg="assembly_camera_manager" 
         type="azure_manager.py" respawn="false" output="screen" >
       <param name="camera_name" type="string" value="azure2" />
+      <param name="save_folder" value="$(arg save_folder)" />
   </node>
   <node name="azure3_manager" pkg="assembly_camera_manager" 
         type="azure_manager.py" respawn="false" output="screen" >
       <param name="camera_name" type="string" value="azure3" />
+      <param name="save_folder" value="$(arg save_folder)" />
   </node>
 
   <!-- Start the aruco_node for azure network-->
@@ -95,7 +100,7 @@
 
   <!-- define transformation to the map  -->
   <node pkg="tf2_ros" type="static_transform_publisher" 
-        name="azure1_map_broadcaster" args="0 0 0 0 0 0 azure1_camera_fid_0 map" /> 
+        name="azure1_map_broadcaster" args="-1.2 0 0 0 0 0 azure1_camera_fid_0 map" /> 
 
   <!-- merge two separate tf tree between cameras  -->
   <node name="azure2_map_merge" pkg="assembly_camera_manager" type="map_merge.py" respawn="false" output="screen" >
@@ -104,6 +109,7 @@
   <node name="azure3_map_merge" pkg="assembly_camera_manager" type="map_merge.py" respawn="false" output="screen" >
       <param name="camera_name" type="string" value="azure3" />
   </node>
+
 
   <!-- start the point cloud manager -->
   <node name="point_cloud_manager" pkg="assembly_camera_manager" type="point_cloud_manager.py" respawn="false" output="screen" >
@@ -116,7 +122,9 @@
       <param name="z_min" value="$(arg z_min)" />
       <param name="z_max" value="$(arg z_max)" />
       <param name="vox_size" value="$(arg vox_size)" />
+      <param name="publish_cloud" value="$(arg publish_cloud)" />
       <param name="target_fiducial_ids" value="$(arg target_fiducial_ids)" />
+      <param name="save_folder" value="$(arg save_folder)" />
   </node>
 
 

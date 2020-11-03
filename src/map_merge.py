@@ -8,7 +8,6 @@ from tf import transformations as t
 import numpy as np
 import numpy.matlib as npm
 import tf2_ros
-import tf_conversions
 import geometry_msgs.msg
 
 # https://answers.ros.org/question/322317/combine-two-parent-child-transformations-for-common-link/
@@ -34,14 +33,12 @@ if __name__ == '__main__':
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             rate.sleep()
             continue
-        while not rospy.is_shutdown():
-            br = tf2_ros.StaticTransformBroadcaster()
-            static_tf = geometry_msgs.msg.TransformStamped()
-            static_tf.header.stamp = rospy.Time.now()
-            static_tf.header.frame_id = 'azure1_camera_fid_0'
-            static_tf.child_frame_id = '{}_camera_base'.format(camera_name)
-            static_tf.transform = transformstamped.transform
-            br.sendTransform(static_tf)
-            rospy.loginfo_once("published static tf: azure1_camera_fid_0 -> {}_camera_base".format(camera_name))
-            rospy.sleep(0.05)
+        br = tf2_ros.StaticTransformBroadcaster()
+        static_tf = geometry_msgs.msg.TransformStamped()
+        static_tf.header.stamp = rospy.Time.now()
+        static_tf.header.frame_id = 'azure1_camera_fid_0'
+        static_tf.child_frame_id = '{}_camera_base'.format(camera_name)
+        static_tf.transform = transformstamped.transform
+        br.sendTransform(static_tf)
+        rospy.loginfo_once("published static tf: azure1_camera_fid_0 -> {}_camera_base".format(camera_name))
 

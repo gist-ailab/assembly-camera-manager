@@ -11,12 +11,17 @@
   <arg name="publish_fiducial_tf" default="false"/>
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
-  <arg name="target_fiducial_id" default="1"/>
+  <!-- <arg name="target_fiducial_id" default="1"/> -->
+  
+  <arg name="camera_map" default="$(find assembly_camera_manager)/maps/camera"/>
+  <arg name="world_map" default="$(find assembly_camera_manager)/maps/world/gist.yaml"/>
 
   <!-- Start camera broadcaster-->
   <node name="single_azure_manager" pkg="assembly_camera_manager" 
         type="azure_manager.py" respawn="false" output="screen" >
       <param name="camera_name" type="string" value="azure1" />
+      <param name="camera_map" value="$(arg camera_map)" />
+      <param name="world_map" value="$(arg world_map)" />
   </node>
 
   <!-- Start the aruco_node for azure-->
@@ -37,9 +42,12 @@
     <remap from="fiducial_transforms" to="/azure1/fiducial_transforms"/>
     <remap from="fiducial_vertices" to="/azure1/fiducial_vertices"/>
   </node>
-    
+
+
   <!-- define camera2_map as a map  -->
   <node pkg="tf" type="static_transform_publisher" 
-        name="azure_map_broadcaster" args="0 0 0 0 0 0 azure1_camera_fid_$(arg target_fiducial_id) map 100 " /> 
+        name="azure_map_table_broadcaster" args="0 0 0.5 0 0 0 map map_table 100" /> 
+  <node pkg="tf" type="static_transform_publisher" 
+        name="azure_base_broadcaster" args="0 0 0 0 0 0 base map 100" /> 
 
 </launch>

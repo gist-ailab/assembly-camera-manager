@@ -4,13 +4,9 @@ Camera manager for furniture assembly project (Kinect Azure and Zivid) using ArU
 
 ### Features
 
-- Receive the sensor value of Zivid and Kinect Azure 
-- Intrinsic & Extrinsic Calibration for Kinect Azure
-- Extrinsic Calibration for Zivid (ExtrinsicCalibrateZivid.srv)
-- tf manager for map and cameras
-
-### To Do
-- service for extrinsic calibration of Kinect Azure
+- Extrinsic Calibration for Kinect Azure
+- Extrinsic Calibration for Zivid
+- tf manager for world map and cameras
 
 ### Prerequisites
 
@@ -18,30 +14,43 @@ Camera manager for furniture assembly project (Kinect Azure and Zivid) using ArU
 - Intrinsic Calibration: Azure Kinect python wrapper: https://github.com/brendandburns/py-k4a
 - fiducials: https://github.com/SeungBack/fiducials
 
+### TO Do
+
+- Accurate calibration of triple camera network using ICP b/w markers
+
+
 ## Getting Started
-### Zivid
+### Kinect Azure
+
+1. Launch camera node and manager
+```
+$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch color_resolution:=720P depth_mode:=NFOV_2X2BINNED fps:=5 tf_prefix:=azure1_
+$ roslaunch assembly_camera_manager single_azure_manager.launch 
+```
+2. Get camera pose using single marker
+```
+$ rosservice call /azure1/get_camera_pose_single_marker \
+    "{publish_worldmap: true, target_id: 0, n_frame: 10, \
+      img_err_thresh: 0.01, obj_err_thresh: 0.01}" 
+```
+3. Get camera pose using multiple marker
+```
+$ rosservice call /azure1/get_camera_pose_multiple_marker \
+    "{publish_worldmap: true, target_ids: [0, 2, 4, 6, 8], n_frame: 10, \
+    img_err_thresh: 0.01, obj_err_thresh: 0.01}" 
+```
+4. Set camera pose from yaml
+```
+$ rosservice call /azure1/set_camera_pose "json_file: 'map_to_azure1_rgb_camera_link_20201102-183839'"
+```
+
+
+### Zivid (Depreceated)
 ```
 $ roslaunch assembly_camera_manager zivid_manager.launch
 $ rosservice call /zivid_camera/extrinsic_calibration
 ```
 
-### Kinect Azure (Single Camera)
-```
-$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch color_resolution:=720P depth_mode:=NFOV_2X2BINNED fps:=5 tf_prefix:=azure1_
-$ roslaunch assembly_camera_manager single_azure_manager.launch target_fiducial_id:="1"
-$ rosservice call /azure1/extrinsic_calibration "target_fiducial_ids: [1]"
-```
-
-### Kinect Azure (Triple camera)
-```
-$ ROS_NAMESPACE=azure3 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000880594512 wired_sync_mode:=2 subordinate_delay_off_master_usec:=500 fps:=5 color_resolution:=720P depth_mode:=NFOV_2X2BINNED tf_prefix:=azure3_ rgb_point_cloud:=true
-$ ROS_NAMESPACE=azure2 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000853594412 wired_sync_mode:=2 subordinate_delay_off_master_usec:=250 fps:=5 color_resolution:=720P depth_mode:=NFOV_2X2BINNED tf_prefix:=azure2_ rgb_point_cloud:=true
-$ ROS_NAMESPACE=azure1 roslaunch azure_kinect_ros_driver driver.launch sensor_sn:=000696793812 wired_sync_mode:=1 color_resolution:=720P depth_mode:=NFOV_2X2BINNED fps:=5 tf_prefix:=azure1_ rgb_point_cloud:=true
-
-# Calibrate Multi K4a Network
-$ roslaunch assembly_camera_manager triple_azure_manager.launch
-$ rosservice call /triple_azure/extrinsic_calibration "target_fiducial_ids: [0, 7, 11]"
-```
 
 ### Notes
 

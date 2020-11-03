@@ -1,0 +1,7 @@
+bool publish_worldmap
+int8[] target_ids
+int8 n_frame
+float32 img_err_thresh
+float32 obj_err_thresh
+---
+bool is_sucess
