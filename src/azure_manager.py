@@ -17,8 +17,7 @@ from rospy_message_converter import json_message_converter
 import os
 import sys
 import yaml
-sys.path.append('/home/demo/Workspace/seung/open3d_ros_helper')
-from open3d_ros_helper.utils import *
+from open3d_ros_helper import open3d_ros_helper as orh
 import PyKDL
 import time
 
@@ -65,7 +64,7 @@ class AzureManager:
             header_frame_id = fid_tfs.header.frame_id
             for i, fid_tf in enumerate(fid_tfs.transforms): 
                 if fid_tf.fiducial_id == target_id:                
-                    pos, quat = transform_to_pq(fid_tf.transform)
+                    pos, quat = orh.transform_to_pq(fid_tf.transform)
                     pos_list.append(pos)
                     quat_list.append(quat)
                     img_err_list.append(fid_tf.image_error)
@@ -92,7 +91,7 @@ class AzureManager:
         quat_min = quat_list[idx]
         source_frame = "{}".format(header_frame_id)
         target_frame = "{}_camera_fid_{}".format(self.camera_name, target_id)
-        static_tf_min = pq_to_transform_stamped(pos_min, quat_min, source_frame, target_frame)
+        static_tf_min = orh.pq_to_transform_stamped(pos_min, quat_min, source_frame, target_frame)
         self.static_aruco_tfs.append(static_tf_min)
         rospy.loginfo("Publish static tf: {} -> {}_camera_fid_{} from ArUco".format(header_frame_id, self.camera_name, target_id))   
 
@@ -109,7 +108,7 @@ class AzureManager:
         quat = target_marker["orientation"] # TODO: invert quaternion 
         source_frame = "{}_camera_fid_{}".format(self.camera_name, target_id)
         target_frame = "base"
-        static_tf_base_to_fid = pq_to_transform_stamped(pos, quat, source_frame, target_frame)
+        static_tf_base_to_fid = orh.pq_to_transform_stamped(pos, quat, source_frame, target_frame)
         self.static_world_tfs.append(static_tf_base_to_fid)
 
         if msg.publish_worldmap:
@@ -117,6 +116,7 @@ class AzureManager:
             self.br.sendTransform(self.static_aruco_tfs + self.static_world_tfs)
         else:
             self.br.sendTransform(self.static_aruco_tfs)
+        rospy.spin()
         return True 
 
         
@@ -132,12 +132,12 @@ class AzureManager:
             pos_list = []
             quat_list = []
             for aruco_tf in self.static_aruco_tfs:
-                pos, quat = transform_stamped_to_pq(aruco_tf)
+                pos, quat = orh.transform_stamped_to_pq(aruco_tf)
                 pos_list.append(pos)
                 quat_list.append(quat)
-            pos_aruco_avg, quat_aruco_avg = average_pq(pos_list, quat_list)
+            pos_aruco_avg, quat_aruco_avg = orh.average_pq(pos_list, quat_list)
             # calculate fid 0 to average of aruco map
-            pos_fid, quat_fid = transform_stamped_to_pq(self.static_aruco_tfs[0])
+            pos_fid, quat_fid = orh.transform_stamped_to_pq(self.static_aruco_tfs[0])
             pos_fid_to_avg = pos_fid - pos_aruco_avg
             quat_aruco_avg = PyKDL.Rotation.Quaternion(*quat_aruco_avg)
             quat_fid = PyKDL.Rotation.Quaternion(*quat_fid)
@@ -147,10 +147,10 @@ class AzureManager:
             pos_list = []
             quat_list = []
             for world_tf in self.static_world_tfs:
-                pos, quat = transform_stamped_to_pq(world_tf)
+                pos, quat = orh.transform_stamped_to_pq(world_tf)
                 pos_list.append(pos)
                 quat_list.append(quat)
-            pos_base_to_avg, quat_base_to_avg = average_pq(pos_list, quat_list)
+            pos_base_to_avg, quat_base_to_avg = orh.average_pq(pos_list, quat_list)
             # calculate average of aruco map to world_base
             pos_avg_to_base = [p for p in pos_base_to_avg]
             quat_base_to_avg = PyKDL.Rotation.Quaternion(*quat_base_to_avg)
@@ -163,7 +163,7 @@ class AzureManager:
             source_frame = self.static_aruco_tfs[0].child_frame_id
             target_frame = "base"
 
-            static_tf_fid_to_base = pq_to_transform_stamped(pos_fid_to_base, quat_fid_to_base, source_frame, target_frame)
+            static_tf_fid_to_base = orh.pq_to_transform_stamped(pos_fid_to_base, quat_fid_to_base, source_frame, target_frame)
             self.static_world_tfs.append(static_tf_fid_to_base)
             self.br.sendTransform(self.static_aruco_tfs + self.static_world_tfs)
         self.save_transfrom_as_json("base", "{}_rgb_camera_link".format(self.camera_name))

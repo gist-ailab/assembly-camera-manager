@@ -8,9 +8,14 @@
   <arg name="do_pose_estimation" default="true"/>
   <arg name="publish_images" default="true"/>
   <arg name="publish_tf_transforms" default="true"/>
+  <arg name="publish_fiducial_tf" default="false"/>
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
-  
+  <arg name="capture_time" default="1" />
+  <arg name="repeat" default="true" />
+  <arg name="camera_map" default="$(find assembly_camera_manager)/maps/camera"/>
+  <arg name="world_map" default="$(find assembly_camera_manager)/maps/world/gist.yaml"/>
+
   <!-- Start the aruco_node for zivid-->
   <node pkg="aruco_detect" name="aruco_detect" ns="zivid_camera"
     type="aruco_detect" output="screen" respawn="false">
@@ -30,17 +35,24 @@
     <remap from="fiducial_vertices" to="/zivid_camera/fiducial_vertices"/>
   </node>
 
+
   <!-- Start Zivid driver-->
   <node name="zivid_camera" pkg="zivid_camera" type="zivid_camera_node" ns="zivid_camera" output="screen"/>
 
   <!-- Start extrininsic calibrator server-->
   <node name="zivid_manager" pkg="assembly_camera_manager" 
         type="zivid_manager.py" respawn="false" output="screen" >
+      <param name="camera_name" type="string" value="zivid_camera" />
+      <param name="capture_time" value="$(arg capture_time)"/>
+      <param name="repeat" value="$(arg repeat)"/>
+      <param name="world_map" value="$(arg world_map)" />
   </node>
   
   <!-- define camera2_map as a map  -->
   <node pkg="tf" type="static_transform_publisher" 
-        name="zivid_map_broadcaster" args="0 0 0 0 0 0 map zivid_camera_fid_0 100" /> 
+        name="azure_map_table_broadcaster" args="0 0 0.5 0 0 0 map map_table 100" /> 
+  <node pkg="tf" type="static_transform_publisher" 
+        name="azure_base_broadcaster" args="0 0 0 0 0 0 base map 100" /> 
 
 
 </launch>
