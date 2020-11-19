@@ -1,0 +1,4 @@
+bool publish_worldmap
+int8 n_frame
+---
+bool is_sucess

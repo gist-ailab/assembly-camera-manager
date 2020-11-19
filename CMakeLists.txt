@@ -58,6 +58,7 @@ add_service_files(
   FILES
   GetCameraPoseSingleMarker.srv
   GetCameraPoseMultipleMarker.srv
+  GetCameraPoseSingleMarkerBoard.srv
   SetCameraPose.srv
 #   Service2.srv
 )

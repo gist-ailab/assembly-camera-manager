@@ -4,7 +4,8 @@ import rospy
 import roslib
 from fiducial_msgs.msg import FiducialTransformArray
 from std_msgs.msg import String
-from assembly_camera_manager.srv import GetCameraPoseSingleMarker, GetCameraPoseMultipleMarker, SetCameraPose
+from sensor_msgs.msg import CameraInfo, Image
+from assembly_camera_manager.srv import GetCameraPoseSingleMarker, GetCameraPoseMultipleMarker, GetCameraPoseSingleMarkerBoard, SetCameraPose
 import tf.transformations as tf_trans
 
 import tf
@@ -20,6 +21,9 @@ import yaml
 from open3d_ros_helper import open3d_ros_helper as orh
 import PyKDL
 import time
+import cv2, cv_bridge              
+import cv2.aruco as aruco
+import tf.transformations as t
 
 class AzureManager:
 
@@ -35,6 +39,8 @@ class AzureManager:
                     .format(self.camera_name), GetCameraPoseSingleMarker, self.get_camera_pose_from_single_marker)
         getcamerapose_multiplemarker_srv = rospy.Service('/{}/get_camera_pose_multiple_marker'
                     .format(self.camera_name), GetCameraPoseMultipleMarker, self.get_camera_pose_from_multiple_marker)
+        getcamerapose_singlemarkerboard_srv = rospy.Service('/{}/get_camera_pose_single_markerboard'
+                    .format(self.camera_name), GetCameraPoseSingleMarkerBoard, self.get_camera_pose_from_single_markerboard)
         setcamerapose_srv = rospy.Service('/{}/set_camera_pose'
                     .format(self.camera_name), SetCameraPose, self.set_camera_pose)
 
@@ -43,6 +49,7 @@ class AzureManager:
         self.br = tf2_ros.StaticTransformBroadcaster()
         self.tf_buffer = tf2_ros.Buffer(rospy.Duration(1.0))
         self.listener = tf2_ros.TransformListener(self.tf_buffer)
+        self.aruco_img_pub = rospy.Publisher('/aruco_detect_img', Image)
         rospy.loginfo("Starting azure_manager.py for {}".format(self.camera_name))
 
     def get_camera_pose_from_single_marker(self, msg):
@@ -169,6 +176,84 @@ class AzureManager:
         self.save_transfrom_as_json("base", "{}_rgb_camera_link".format(self.camera_name))
         rospy.loginfo("Finished the camera pose calibration")
         return True
+
+
+    def get_camera_pose_from_single_markerboard(self, msg):
+
+        n_frame = msg.n_frame
+        rospy.loginfo("Get camera pose of {} for markerboard".format(self.camera_name))
+        header_frame_id = "azure1_rgb_camera_link"
+
+        # basic parameters
+        dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)   # dictionary id
+        board = aruco.GridBoard_create(5, 7, 0.0325, 0.004, dictionary)
+        parameters =  aruco.DetectorParameters_create()
+        camera_info = rospy.wait_for_message("/{}/rgb/camera_info".format(self.camera_name), CameraInfo)
+        K = np.array(camera_info.K).reshape(3, 3)
+        D = np.array(camera_info.D)
+
+        pos_list = []
+        quat_list = []
+        n_sucess = 0
+        # detect marker from image
+        for n in range(n_frame):
+            image = rospy.wait_for_message("/{}/rgb/image_raw".format(self.camera_name), Image)
+            bridge = cv_bridge.CvBridge()
+            frame = bridge.imgmsg_to_cv2(image, desired_encoding='bgr8')
+            corners, ids, rejected = aruco.detectMarkers(frame, dictionary, parameters=parameters)
+            corners, ids, rejected, recovered = aruco.refineDetectedMarkers(frame, board, corners, ids, rejected,
+                                                                                K, D,
+                                                                                errorCorrectionRate=-1,
+                                                                                parameters=parameters)
+            N, rvec, tvec = aruco.estimatePoseBoard(corners, ids, board, K, D, None, None)
+            if N:
+                cv2.aruco.drawAxis(frame, K, D, rvec, tvec, 0.2)
+                cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+                self.aruco_img_pub.publish(bridge.cv2_to_imgmsg(frame))
+                pos = tvec 
+                rot = np.eye(4)
+                rot[:3, :3] = np.squeeze(cv2.Rodrigues(rvec)[0])
+                quat = t.quaternion_from_matrix(rot)
+                pos_list.append(pos)
+                quat_list.append(quat)
+                n_sucess += 1
+        
+        if len(pos_list) == 0:
+            rospy.logwarn("Failed to detect the marker board")
+            return False
+        
+        pos, quat = orh.average_pq(pos_list, quat_list)
+        source_frame = header_frame_id
+        target_frame = "{}_markerboard".format(self.camera_name)
+        static_tf_min = orh.pq_to_transform_stamped(pos, quat, source_frame, target_frame)
+        self.static_aruco_tfs.append(static_tf_min)
+        rospy.loginfo("Publish static tf: {} -> {}_markerboard from ArUco".format(header_frame_id, self.camera_name))   
+
+        # find target marker in world map
+        target_marker = None
+        for marker in self.world_map["markers"]:
+            if marker["id"] == "board":
+                target_marker = marker
+        if target_marker is None: 
+            rospy.logwarn("No information in world map for marker board")
+        
+        pos = target_marker["position"]
+        pos = [-p for p in pos]
+        quat = target_marker["orientation"] # TODO: invert quaternion 
+        source_frame = "{}_markerboard".format(self.camera_name)
+        target_frame = "base"
+        static_tf_base_to_fid = orh.pq_to_transform_stamped(pos, quat, source_frame, target_frame)
+        self.static_world_tfs.append(static_tf_base_to_fid)
+
+        if msg.publish_worldmap:
+            rospy.loginfo("Publish static tf: {}_markerboard -> base from world map ".format(self.camera_name))   
+            self.br.sendTransform(self.static_aruco_tfs + self.static_world_tfs)
+        else:
+            self.br.sendTransform(self.static_aruco_tfs)
+        
+        self.save_transfrom_as_json("base", "{}_rgb_camera_link".format(self.camera_name))
+        rospy.loginfo("Finished the camera pose calibration")
+        return True 
 
     def set_camera_pose(self, msg):
 
