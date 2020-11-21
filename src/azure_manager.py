@@ -4,7 +4,7 @@ import rospy
 import roslib
 from fiducial_msgs.msg import FiducialTransformArray
 from std_msgs.msg import String
-from sensor_msgs.msg import CameraInfo, Image
+from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from assembly_camera_manager.srv import GetCameraPoseSingleMarker, GetCameraPoseMultipleMarker, GetCameraPoseSingleMarkerBoard, SetCameraPose
 import tf.transformations as tf_trans
 
@@ -32,6 +32,7 @@ class AzureManager:
         rospy.init_node("azure_manager", anonymous=True)
         self.camera_name = rospy.get_param('~camera_name')
         self.camera_map = rospy.get_param('~camera_map')
+        self.filter_size = rospy.get_param('~filter_size')
         with open(rospy.get_param('~world_map')) as f:
             self.world_map = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -43,14 +44,22 @@ class AzureManager:
                     .format(self.camera_name), GetCameraPoseSingleMarkerBoard, self.get_camera_pose_from_single_markerboard)
         setcamerapose_srv = rospy.Service('/{}/set_camera_pose'
                     .format(self.camera_name), SetCameraPose, self.set_camera_pose)
-
+        self.points_sub = rospy.Subscriber('/{}/points2'.format(self.camera_name), PointCloud2, self.squeeze_cloud, buff_size=3840*2160*3)
+        self.cloud_pub = rospy.Publisher('/{}/filt_points2'.format(self.camera_name), PointCloud2, queue_size=1)
         self.static_aruco_tfs = []
         self.static_world_tfs = []
         self.br = tf2_ros.StaticTransformBroadcaster()
         self.tf_buffer = tf2_ros.Buffer(rospy.Duration(1.0))
         self.listener = tf2_ros.TransformListener(self.tf_buffer)
-        self.aruco_img_pub = rospy.Publisher('/aruco_detect_img', Image)
+        self.aruco_img_pub = rospy.Publisher('/aruco_detect_img', Image, queue_size=1)
         rospy.loginfo("Starting azure_manager.py for {}".format(self.camera_name))
+
+    def squeeze_cloud(self, msg):
+        cloud = orh.rospc_to_o3dpc(msg, remove_nans=True)
+        cloud = cloud.voxel_down_sample(voxel_size=self.filter_size)
+        cloud = orh.o3dpc_to_rospc(cloud, frame_id=msg.header.frame_id)
+        self.cloud_pub.publish(cloud)
+
 
     def get_camera_pose_from_single_marker(self, msg):
 
@@ -186,7 +195,7 @@ class AzureManager:
 
         # basic parameters
         dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)   # dictionary id
-        board = aruco.GridBoard_create(5, 7, 0.0325, 0.004, dictionary)
+        board = aruco.GridBoard_create(5, 7, 0.033, 0.004, dictionary)
         parameters =  aruco.DetectorParameters_create()
         camera_info = rospy.wait_for_message("/{}/rgb/camera_info".format(self.camera_name), CameraInfo)
         K = np.array(camera_info.K).reshape(3, 3)

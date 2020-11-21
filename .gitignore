@@ -4,3 +4,4 @@ imgs/
 camera_info
 *.pyc
 results/
+*.json

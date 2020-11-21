@@ -11,6 +11,8 @@
   <arg name="publish_fiducial_tf" default="false"/>
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
+  <arg name="filter_size" default="0.005"/>
+
   <!-- <arg name="target_fiducial_id" default="1"/> -->
   
   <arg name="camera_map" default="$(find assembly_camera_manager)/maps/camera"/>
@@ -22,6 +24,8 @@
       <param name="camera_name" type="string" value="azure1" />
       <param name="camera_map" value="$(arg camera_map)" />
       <param name="world_map" value="$(arg world_map)" />
+      <param name="filter_size" value="$(arg filter_size)" />
+
   </node>
 
   <!-- Start the aruco_node for azure-->
