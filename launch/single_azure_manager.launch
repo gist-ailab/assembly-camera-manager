@@ -16,7 +16,7 @@
   <!-- <arg name="target_fiducial_id" default="1"/> -->
   
   <arg name="camera_map" default="$(find assembly_camera_manager)/maps/camera"/>
-  <arg name="world_map" default="$(find assembly_camera_manager)/maps/world/gist.yaml"/>
+  <arg name="world_map" default="$(find assembly_camera_manager)/maps/world/snu.yaml"/>
 
   <!-- Start camera broadcaster-->
   <node name="single_azure_manager" pkg="assembly_camera_manager" 

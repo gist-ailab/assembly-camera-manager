@@ -1,0 +1,4 @@
+dictionary: 8
+fiducial_length: 0.120
+markers:
+  - {id: "board", position: [-0.40, -0.5375, 0.503], orientation: [0, 0, 0, 1]}

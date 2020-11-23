@@ -53,6 +53,9 @@ class AzureManager:
         self.listener = tf2_ros.TransformListener(self.tf_buffer)
         self.aruco_img_pub = rospy.Publisher('/aruco_detect_img', Image, queue_size=1)
         rospy.loginfo("Starting azure_manager.py for {}".format(self.camera_name))
+        while True:
+            self.br.sendTransform(self.static_aruco_tfs + self.static_world_tfs)
+
 
     def squeeze_cloud(self, msg):
         cloud = orh.rospc_to_o3dpc(msg, remove_nans=True)

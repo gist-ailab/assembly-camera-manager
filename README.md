@@ -47,7 +47,10 @@ n_frame: 10"
 
 5. Set camera pose from yaml
 ```
+# gist
 $ rosservice call /azure1/set_camera_pose "json_file: 'base_to_azure1_rgb_camera_link_20201119-133337'"
+# snu
+$ rosservice call /azure1/set_camera_pose "json_file: base_to_azure1_rgb_camera_link_20201123-105837'"
 ```
 
 
