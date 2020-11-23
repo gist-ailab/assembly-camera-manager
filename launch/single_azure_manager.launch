@@ -50,7 +50,7 @@
 
   <!-- define camera2_map as a map  -->
   <node pkg="tf" type="static_transform_publisher" 
-        name="azure_map_table_broadcaster" args="0 0 0.5 0 0 0 map map_table 100" /> 
+        name="azure_map_table_broadcaster" args="0 0 1 0 0 0 map map_table 100" /> 
   <node pkg="tf" type="static_transform_publisher" 
         name="azure_base_broadcaster" args="0 0 0 0 0 0 base map 100" /> 
 
