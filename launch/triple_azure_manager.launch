@@ -16,12 +16,12 @@
 
   <arg name="img_width" default="1280"/>
   <arg name="img_height" default="720"/>
-  <arg name="x_min" default="-1"/>
-  <arg name="x_max" default="1"/>
-  <arg name="y_min" default="-1"/>
-  <arg name="y_max" default="1"/>
-  <arg name="z_min" default="-0.03"/>
-  <arg name="z_max" default="0.6"/>
+  <arg name="x_min" default="-5"/>
+  <arg name="x_max" default="5"/>
+  <arg name="y_min" default="-5"/>
+  <arg name="y_max" default="5"/>
+  <arg name="z_min" default="0.90"/>
+  <arg name="z_max" default="2.0"/>
   <arg name="publish_cloud" default="false"/>
   <arg name="save_folder" default="/home/demo/catkin_ws/src/assembly_camera_manager/results"/>
 

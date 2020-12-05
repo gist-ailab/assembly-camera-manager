@@ -12,7 +12,12 @@
   <arg name="ignore_fiducials" default="" />
   <arg name="fiducial_len_override" default="" />
   <arg name="filter_size" default="0.005"/>
-
+  <arg name="x_min" default="-5"/>
+  <arg name="x_max" default="5"/>
+  <arg name="y_min" default="-5"/>
+  <arg name="y_max" default="5"/>
+  <arg name="z_min" default="-5"/>
+  <arg name="z_max" default="5"/>
   <!-- <arg name="target_fiducial_id" default="1"/> -->
   
   <arg name="camera_map" default="$(find assembly_camera_manager)/maps/camera"/>
@@ -25,6 +30,12 @@
       <param name="camera_map" value="$(arg camera_map)" />
       <param name="world_map" value="$(arg world_map)" />
       <param name="filter_size" value="$(arg filter_size)" />
+      <param name="x_min" value="$(arg x_min)" />
+      <param name="x_max" value="$(arg x_max)" />
+      <param name="y_min" value="$(arg y_min)" />
+      <param name="y_max" value="$(arg y_max)" />
+      <param name="z_min" value="$(arg z_min)" />
+      <param name="z_max" value="$(arg z_max)" />
 
   </node>
 

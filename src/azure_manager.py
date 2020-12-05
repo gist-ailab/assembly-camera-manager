@@ -35,7 +35,10 @@ class AzureManager:
         self.filter_size = rospy.get_param('~filter_size')
         with open(rospy.get_param('~world_map')) as f:
             self.world_map = yaml.load(f, Loader=yaml.FullLoader)
-
+        # min, max bounds for x, y, z in meter
+        self.ROI = {'x': [rospy.get_param('~x_min'), rospy.get_param('~x_max')], 
+                    'y': [rospy.get_param('~y_min'), rospy.get_param('~y_max')],
+                    'z': [rospy.get_param('~z_min'), rospy.get_param('~z_max')]} 
         getcamerapose_singlemarker_srv = rospy.Service('/{}/get_camera_pose_single_marker'
                     .format(self.camera_name), GetCameraPoseSingleMarker, self.get_camera_pose_from_single_marker)
         getcamerapose_multiplemarker_srv = rospy.Service('/{}/get_camera_pose_multiple_marker'
@@ -60,6 +63,7 @@ class AzureManager:
     def squeeze_cloud(self, msg):
         cloud = orh.rospc_to_o3dpc(msg, remove_nans=True)
         cloud = cloud.voxel_down_sample(voxel_size=self.filter_size)
+        cloud = orh.apply_pass_through_filter(cloud, self.ROI['x'], self.ROI['y'], self.ROI['z'])
         cloud = orh.o3dpc_to_rospc(cloud, frame_id=msg.header.frame_id)
         self.cloud_pub.publish(cloud)
 

@@ -1,4 +1,4 @@
 dictionary: 8
 fiducial_length: 0.120
 markers:
-  - {id: "board", position: [0.40, 0.5375, 1.003], orientation: [0, 0, 0, 1]}
+  - {id: "board", position: [0, 0.64, 1.038], orientation: [0, 0, 0, 1]}
